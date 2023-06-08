@@ -72,10 +72,10 @@ namespace Show_Elements_By_Protocol_1
 		/// <param name="engine">Link with SLAutomation process.</param>
 		public void Run(IEngine engine)
 		{
-			var input = engine.GetScriptParam("Parameter Input");
+			var input = engine.GetScriptParam("Protocol Name");
 			if (string.IsNullOrWhiteSpace(input?.Value))
 			{
-				engine.ExitFail("'Parameter Input' parameter is required");
+				engine.ExitFail("'Protocol Name' parameter is required");
 				return;
 			}
 

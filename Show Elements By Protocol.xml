@@ -15,7 +15,7 @@
 
 	<Parameters>
 		<ScriptParameter id="1" type="string" values="">
-			<Description>Parameter Input</Description>
+			<Description>Protocol Name</Description>
 		</ScriptParameter>
 	</Parameters>
 
