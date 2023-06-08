@@ -45,7 +45,7 @@ Revision History:
 
 DATE		VERSION		AUTHOR			COMMENTS
 
-dd/mm/2023	1.0.0.1		XXX, Skyline	Initial version
+08/06/2023	1.0.0.1		TVP, Skyline	Initial version
 ****************************************************************************
 */
 
@@ -63,6 +63,7 @@ namespace Show_elements_with_parameter_value_1
 	using Skyline.DataMiner.Core.DataMinerSystem.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Common;
 	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
 	/// Represents a DataMiner Automation script.
@@ -76,23 +77,61 @@ namespace Show_elements_with_parameter_value_1
 		public void Run(IEngine engine)
 		{
 			InputData inputData = new InputData(engine);
-			engine.GenerateInformation("TVP" + 1);
 			var dms = engine.GetDms();
 
-			engine.GenerateInformation("TVP" + 2);
-			var Elements = dms.GetElements().Where(x=>x.Protocol.Name == inputData.ProtocolName);
-			engine.GenerateInformation("TVP" + 3);
+			var Elements = dms.GetElements().Where(x => x.Protocol.Name == inputData.ProtocolName);
 			if (!Elements.Any())
 			{
+				engine.GenerateInformation("TVP" + "3a");
 				HandleNoElementsFound(engine, dms, inputData);
 			}
-			engine.GenerateInformation("TVP" + Elements.First());
+			engine.GenerateInformation("TVP|" + Elements.First().Name);
 
-			List<string> matchingElements = new List<string>();
+			List<IDmsElement> matchingElements = new List<IDmsElement>();
 			foreach (IDmsElement element in Elements)
 			{
-				matchingElements.Add(element.GetStandaloneParameter<string>(inputData.Parameter).GetValue());
+				//engine.GenerateInformation("TVP|GetParameter" + element.GetStandaloneParameter<string>(inputData.Parameter).GetValue());
+				string elementParamValue;
+				if (Int32.TryParse(inputData.Parameter, out int parameterId))
+				{
+					elementParamValue = element.GetStandaloneParameter<string>(parameterId).GetValue();
+				}
+				else
+				{
+					var tempElement = engine.FindElementsByName(element.Name).Single();
+					elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
+				}
+
+				if (elementParamValue == inputData.ParameterValue)
+				{
+					matchingElements.Add(element);
+				}
 			}
+
+			engine.GenerateInformation("TVP list:" + String.Join(".", matchingElements));
+
+			CreateResponse(engine, inputData, matchingElements);
+		}
+
+		private void CreateResponse(IEngine engine, InputData inputData, List<IDmsElement> matchingElements)
+		{
+			var card = new List<AdaptiveElement>
+			{
+				new AdaptiveTextBlock($"Below you can find the list of all the {inputData.ProtocolName} elements, with parameter : {inputData.Parameter}, and value: {inputData.ParameterValue}") { Wrap = true },
+			};
+
+			foreach (var element in matchingElements)
+			{
+				card.Add(new AdaptiveFactSet
+				{
+					Facts = new List<AdaptiveFact>
+					{
+						new AdaptiveFact("Element:", $"{element.Name} ({element.DmsElementId.Value})"),
+					},
+				});
+			}
+
+			engine.AddScriptOutput("AdaptiveCard", JsonConvert.SerializeObject(card));
 		}
 
 		private void HandleNoElementsFound(IEngine engine, IDms dms, InputData inputData)
@@ -116,7 +155,6 @@ namespace Show_elements_with_parameter_value_1
 			};
 
 			engine.AddScriptOutput("AdaptiveCard", JsonConvert.SerializeObject(card));
-
 		}
 
 		private void ProtocolNotFoundResponse(IEngine engine, string protocolName)

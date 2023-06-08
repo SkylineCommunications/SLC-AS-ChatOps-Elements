@@ -7,17 +7,14 @@ namespace Show_elements_with_parameter_value_1
 	{
 		public InputData(IEngine engine)
 		{
-			engine.GenerateInformation("TVP" + "a1");
 			ProtocolName = engine.GetScriptParam("Protocol Name").Value;
-			engine.GenerateInformation("TVP" + "a2");
-			Parameter = Convert.ToInt32(engine.GetScriptParam("Parameter").Value);
-			engine.GenerateInformation("TVP" +"a3");
-			ParameterValue = engine.GetScriptParam("Protocol Value").Value;
+			Parameter = Convert.ToString(engine.GetScriptParam("Parameter").Value);
+			ParameterValue = engine.GetScriptParam("Parameter Value").Value;
 		}
 
 		public string ProtocolName { get; set; }
 
-		public int Parameter { get; set; }
+		public string Parameter { get; set; }
 
 		public string ParameterValue { get; set; }
 	}
