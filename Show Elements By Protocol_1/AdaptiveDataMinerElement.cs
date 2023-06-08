@@ -30,7 +30,7 @@
 							{
 								new AdaptiveTextBlock
 								{
-									Text = "🔵",
+									Text = "⬤",
 									Size = AdaptiveTextSize.ExtraLarge,
 									Color = TranslateAlarm(element.GetAlarmLevel()),
 								},
