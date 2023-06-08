@@ -82,33 +82,39 @@ namespace Show_elements_with_parameter_value_1
 			var Elements = dms.GetElements().Where(x => x.Protocol.Name == inputData.ProtocolName);
 			if (!Elements.Any())
 			{
-				engine.GenerateInformation("TVP" + "3a");
 				HandleNoElementsFound(engine, dms, inputData);
 			}
-			engine.GenerateInformation("TVP|" + Elements.First().Name);
 
 			List<IDmsElement> matchingElements = new List<IDmsElement>();
 			foreach (IDmsElement element in Elements)
 			{
 				//engine.GenerateInformation("TVP|GetParameter" + element.GetStandaloneParameter<string>(inputData.Parameter).GetValue());
 				string elementParamValue;
-				if (Int32.TryParse(inputData.Parameter, out int parameterId))
+				try
 				{
-					elementParamValue = element.GetStandaloneParameter<string>(parameterId).GetValue();
-				}
-				else
-				{
-					var tempElement = engine.FindElementsByName(element.Name).Single();
-					elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
-				}
+					if (Int32.TryParse(inputData.Parameter, out int parameterId))
+					{
+						elementParamValue = element.GetStandaloneParameter<string>(parameterId).GetValue();
+					}
+					else
+					{
+						var tempElement = engine.FindElementsByName(element.Name).Single();
+						elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
+					}
 
-				if (elementParamValue == inputData.ParameterValue)
+					if (elementParamValue == inputData.ParameterValue)
+					{
+						matchingElements.Add(element);
+					}
+				}
+				catch (ParameterNotFoundException exception)
 				{
-					matchingElements.Add(element);
+					// it can happen that in 1 version the parameter didn't exist yet. 
+					continue;
 				}
 			}
 
-			engine.GenerateInformation("TVP list:" + String.Join(".", matchingElements));
+			engine.GenerateInformation("Matching elements list:" + String.Join(".", matchingElements));
 
 			CreateResponse(engine, inputData, matchingElements);
 		}
@@ -151,7 +157,7 @@ namespace Show_elements_with_parameter_value_1
 		{
 			var card = new List<AdaptiveElement>
 			{
-				new AdaptiveTextBlock($"No Elements found running {protocolName} ") { Wrap = true },
+				new AdaptiveTextBlock($"No Elements found running {protocolName}") { Wrap = true },
 			};
 
 			engine.AddScriptOutput("AdaptiveCard", JsonConvert.SerializeObject(card));
