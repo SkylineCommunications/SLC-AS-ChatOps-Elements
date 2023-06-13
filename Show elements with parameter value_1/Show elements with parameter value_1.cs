@@ -104,8 +104,6 @@ namespace Show_elements_with_parameter_value_1
 						{
 							matchingElements.Add(element);
 						}
-
-						engine.GenerateInformation(elementParamDisplayedValue);
 					}
 					catch (Exception)
 					{
