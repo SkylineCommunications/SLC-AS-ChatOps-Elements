@@ -95,12 +95,25 @@ namespace Show_Elements_By_Protocol_1
 
 		private void FindElements(IEngine engine, string input)
 		{
+			var elements = engine.FindElementsByProtocol(input);
+
+			// If there are no elements with the specified protocol
+			if(!elements.Any())
+			{
+				engine.AddScriptOutput("AdaptiveCard", JsonConvert.SerializeObject(
+					new List<AdaptiveElement>
+					{
+						new AdaptiveTextBlock($"There were no elements found with the given protocol ({input}).") { Wrap = true },
+					}));
+				return;
+			}
+
 			var card = new List<AdaptiveElement>
 			{
 				new AdaptiveTextBlock($"Below you can find the list of all the {input} elements") { Wrap = true },
 			};
 
-			var elements = engine.FindElementsByProtocol(input);
+			// Otherwise list them
 			foreach (var element in elements)
 			{
 				var elementCard = new AdaptiveDataMinerElement(dms.GetElement(new DmsElementId(element.DmaId, element.ElementId)));
