@@ -88,24 +88,24 @@ namespace Show_elements_with_parameter_value_1
 					try
 					{
 						// To Support Discreet parameters we will also retrieve the displayed parameter.
-						string elementParamValue;
 						string elementParamDisplayedValue;
 						if (Int32.TryParse(inputData.Parameter, out int parameterId))
 						{
-							elementParamValue = element.GetStandaloneParameter<string>(parameterId).GetValue();
 							elementParamDisplayedValue = element.GetStandaloneParameter<string>(parameterId).GetDisplayValue();
 						}
 						else
 						{
 							var tempElement = engine.FindElementsByName(element.Name).Single();
-							elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
+							string elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
 							elementParamDisplayedValue = tempElement.GetDisplayValue(inputData.Parameter, elementParamValue);
 						}
 
-						if (elementParamValue == inputData.ParameterValue || elementParamDisplayedValue == inputData.ParameterValue)
+						if (elementParamDisplayedValue == inputData.ParameterValue)
 						{
 							matchingElements.Add(element);
 						}
+
+						engine.GenerateInformation(elementParamDisplayedValue);
 					}
 					catch (Exception)
 					{
