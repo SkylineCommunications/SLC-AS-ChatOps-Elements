@@ -132,6 +132,7 @@ namespace Show_elements_with_parameter_value_1
 				{
 					new AdaptiveTextBlock($"No elements were detected using: {inputData.ProtocolName}, with parameter : {inputData.Parameter}, and value: {inputData.ParameterValue}") { Wrap = true },
 				};
+				return;
 			}
 
 			card = new List<AdaptiveElement>
