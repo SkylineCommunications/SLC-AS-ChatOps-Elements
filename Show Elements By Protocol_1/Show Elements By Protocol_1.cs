@@ -51,6 +51,7 @@ dd/mm/2023	1.0.0.1		XXX, Skyline	Initial version
 
 namespace Show_Elements_By_Protocol_1
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using AdaptiveCards;
@@ -72,25 +73,33 @@ namespace Show_Elements_By_Protocol_1
 		/// <param name="engine">Link with SLAutomation process.</param>
 		public void Run(IEngine engine)
 		{
-			var input = engine.GetScriptParam("Protocol Name");
-			if (string.IsNullOrWhiteSpace(input?.Value))
+			try
 			{
-				engine.ExitFail("'Protocol Name' parameter is required");
-				return;
+				var input = engine.GetScriptParam("Protocol Name");
+				if (string.IsNullOrWhiteSpace(input?.Value))
+				{
+					engine.ExitFail("'Protocol Name' parameter is required");
+					return;
+				}
+
+				dms = engine.GetDms();
+				var protocols = dms.GetProtocols().GroupBy(proto => proto.Name).Select(g => g.First());
+
+				// If the given protocol exists
+				if (protocols.Select(proto => proto.Name).Contains(input.Value))
+				{
+					FindElements(engine, input.Value);
+					return;
+				}
+
+				// If it doesn't give some suggestions, maybe it was misspelled.
+				GiveSuggestions(engine, protocols, input.Value);
 			}
-
-			dms = engine.GetDms();
-			var protocols = dms.GetProtocols().GroupBy(proto => proto.Name).Select(g => g.First());
-
-			// If the given protocol exists
-			if (protocols.Select(proto => proto.Name).Contains(input.Value))
+			catch (Exception ex)
 			{
-				FindElements(engine, input.Value);
-				return;
+				engine.Log(ex.ToString());
+				engine.ExitFail(ex.Message);
 			}
-
-			// If it doesn't give some suggestions, maybe it was misspelled.
-			GiveSuggestions(engine, protocols, input.Value);
 		}
 
 		private void FindElements(IEngine engine, string input)
@@ -98,7 +107,7 @@ namespace Show_Elements_By_Protocol_1
 			var elements = engine.FindElementsByProtocol(input);
 
 			// If there are no elements with the specified protocol
-			if(!elements.Any())
+			if (!elements.Any())
 			{
 				engine.AddScriptOutput("AdaptiveCard", JsonConvert.SerializeObject(
 					new List<AdaptiveElement>
