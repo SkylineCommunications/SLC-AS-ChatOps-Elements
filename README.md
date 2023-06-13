@@ -4,9 +4,9 @@ This repository contains an automation script solution with scripts that can be 
 
 The following scrips are currently available:
 
-- [Show Elements by Protocol](#bpa-info)
+- [Show Elements by Protocol](#Show-Elements-by-Protocol)
 
-- [Show Elements With Parameter Value](#bpa-info)
+- [Show Elements With Parameter Value](#Show-Elements-With-Parameter-Value)
 
 ## Pre-requisites
 
@@ -16,7 +16,7 @@ Kindly ensure that your DataMiner system and your Microsoft Teams adhere to the 
 
 Automation script that returns the elements that use the given protocol from the connected DataMiner system. In case the protocol is not found or a typo is made it will suggest 3 protocols based on the input.
 
-![Response example](/Documentation/ShowElementsByProtocol.gif)
+![Show element by Protocol example](/Documentation/ShowElementsByProtocol.gif)
 
 ## Show Elements With Parameter Value
 
@@ -26,3 +26,4 @@ Automation script that returns the elements that use the given protocol containi
 
     Column parameters are not supported.
 
+![Show Element with Parameter Value example](/Documentation/ShowElementwithParameterValue.gif)
