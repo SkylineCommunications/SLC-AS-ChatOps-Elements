@@ -76,7 +76,7 @@ namespace Show_elements_with_parameter_value_1
 				InputData inputData = new InputData(engine);
 				var dms = engine.GetDms();
 
-				var Elements = dms.GetElements().Where(x => x.Protocol.Name == inputData.ProtocolName);
+				var Elements = dms.GetElements().Where(x => x.Protocol.Name.ToLower() == inputData.ProtocolName);
 				if (!Elements.Any())
 				{
 					HandleNoElementsFound(engine, dms, inputData);
@@ -125,7 +125,16 @@ namespace Show_elements_with_parameter_value_1
 
 		private void CreateResponse(IEngine engine, InputData inputData, List<IDmsElement> matchingElements)
 		{
-			var card = new List<AdaptiveElement>
+			List<AdaptiveElement> card;
+			if (!matchingElements.Any())
+			{
+				card = new List<AdaptiveElement>
+				{
+					new AdaptiveTextBlock($"No elements were detected using: {inputData.ProtocolName}, with parameter : {inputData.Parameter}, and value: {inputData.ParameterValue}") { Wrap = true },
+				};
+			}
+
+			card = new List<AdaptiveElement>
 			{
 				new AdaptiveTextBlock($"Below you can find the list of all the {inputData.ProtocolName} elements, with parameter : {inputData.Parameter}, and value: {inputData.ParameterValue}") { Wrap = true },
 			};

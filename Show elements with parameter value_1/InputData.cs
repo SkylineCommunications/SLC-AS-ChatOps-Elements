@@ -7,7 +7,7 @@ namespace Show_elements_with_parameter_value_1
 	{
 		public InputData(IEngine engine)
 		{
-			ProtocolName = engine.GetScriptParam("Protocol Name").Value;
+			ProtocolName = engine.GetScriptParam("Protocol Name").Value.ToLower();
 			Parameter = Convert.ToString(engine.GetScriptParam("Parameter").Value);
 			ParameterValue = engine.GetScriptParam("Parameter Value").Value;
 		}
