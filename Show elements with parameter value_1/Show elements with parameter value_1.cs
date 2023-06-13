@@ -53,17 +53,12 @@ namespace Show_elements_with_parameter_value_1
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Globalization;
-	using AdaptiveCards;
 	using System.Linq;
-	using System.Text;
+	using AdaptiveCards;
 	using Newtonsoft.Json;
-	using Skyline.DataMiner.Analytics.GenericInterface.QueryBuilder;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Common;
-	using Skyline.DataMiner.Net;
-	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
 	/// Represents a DataMiner Automation script.
@@ -76,47 +71,56 @@ namespace Show_elements_with_parameter_value_1
 		/// <param name="engine">Link with SLAutomation process.</param>
 		public void Run(IEngine engine)
 		{
-			InputData inputData = new InputData(engine);
-			var dms = engine.GetDms();
-
-			var Elements = dms.GetElements().Where(x => x.Protocol.Name == inputData.ProtocolName);
-			if (!Elements.Any())
+			try
 			{
-				HandleNoElementsFound(engine, dms, inputData);
-			}
+				InputData inputData = new InputData(engine);
+				var dms = engine.GetDms();
 
-			List<IDmsElement> matchingElements = new List<IDmsElement>();
-			foreach (IDmsElement element in Elements)
-			{
-				//engine.GenerateInformation("TVP|GetParameter" + element.GetStandaloneParameter<string>(inputData.Parameter).GetValue());
-				string elementParamValue;
-				try
+				var Elements = dms.GetElements().Where(x => x.Protocol.Name == inputData.ProtocolName);
+				if (!Elements.Any())
 				{
-					if (Int32.TryParse(inputData.Parameter, out int parameterId))
-					{
-						elementParamValue = element.GetStandaloneParameter<string>(parameterId).GetValue();
-					}
-					else
-					{
-						var tempElement = engine.FindElementsByName(element.Name).Single();
-						elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
-					}
+					HandleNoElementsFound(engine, dms, inputData);
+				}
 
-					if (elementParamValue == inputData.ParameterValue)
+				List<IDmsElement> matchingElements = new List<IDmsElement>();
+				foreach (IDmsElement element in Elements)
+				{
+					try
 					{
-						matchingElements.Add(element);
+						string elementParamValue;
+						if (Int32.TryParse(inputData.Parameter, out int parameterId))
+						{
+							elementParamValue = element.GetStandaloneParameter<string>(parameterId).GetValue();
+						}
+						else
+						{
+							var tempElement = engine.FindElementsByName(element.Name).Single();
+							elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
+						}
+
+						if (elementParamValue == inputData.ParameterValue)
+						{
+							matchingElements.Add(element);
+						}
+					}
+					catch (Exception)
+					{
+						// We don't want to stop the execution if some elements give us issues:
+						// it can happen that the parameter didn't exist yet in an earlier version of the protocol.
+						// Or that the element is in timeout
+						continue;
 					}
 				}
-				catch (ParameterNotFoundException exception)
-				{
-					// it can happen that in 1 version the parameter didn't exist yet. 
-					continue;
-				}
+
+				engine.GenerateInformation("Matching elements list:" + String.Join(".", matchingElements));
+
+				CreateResponse(engine, inputData, matchingElements);
 			}
-
-			engine.GenerateInformation("Matching elements list:" + String.Join(".", matchingElements));
-
-			CreateResponse(engine, inputData, matchingElements);
+			catch (Exception ex)
+			{
+				engine.Log(ex.ToString());
+				engine.ExitFail(ex.Message);
+			}
 		}
 
 		private void CreateResponse(IEngine engine, InputData inputData, List<IDmsElement> matchingElements)
