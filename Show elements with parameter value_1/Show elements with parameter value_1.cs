@@ -87,18 +87,22 @@ namespace Show_elements_with_parameter_value_1
 				{
 					try
 					{
+						// To Support Discreet parameters we will also retrieve the displayed parameter.
 						string elementParamValue;
+						string elementParamDisplayedValue;
 						if (Int32.TryParse(inputData.Parameter, out int parameterId))
 						{
 							elementParamValue = element.GetStandaloneParameter<string>(parameterId).GetValue();
+							elementParamDisplayedValue = element.GetStandaloneParameter<string>(parameterId).GetDisplayValue();
 						}
 						else
 						{
 							var tempElement = engine.FindElementsByName(element.Name).Single();
 							elementParamValue = Convert.ToString(tempElement.GetParameter(inputData.Parameter));
+							elementParamDisplayedValue = tempElement.GetDisplayValue(inputData.Parameter, elementParamValue);
 						}
 
-						if (elementParamValue == inputData.ParameterValue)
+						if (elementParamValue == inputData.ParameterValue || elementParamDisplayedValue == inputData.ParameterValue)
 						{
 							matchingElements.Add(element);
 						}
@@ -128,10 +132,7 @@ namespace Show_elements_with_parameter_value_1
 			List<AdaptiveElement> card;
 			if (!matchingElements.Any())
 			{
-				card = new List<AdaptiveElement>
-				{
-					new AdaptiveTextBlock($"No elements were detected using: {inputData.ProtocolName}, with parameter : {inputData.Parameter}, and value: {inputData.ParameterValue}") { Wrap = true },
-				};
+				HandleNoMatchingElementsFound(engine, inputData);
 				return;
 			}
 
@@ -152,6 +153,17 @@ namespace Show_elements_with_parameter_value_1
 			}
 
 			engine.AddScriptOutput("AdaptiveCard", JsonConvert.SerializeObject(card));
+		}
+
+		private static void HandleNoMatchingElementsFound(IEngine engine, InputData inputData)
+		{
+			List<AdaptiveElement> card;
+			card = new List<AdaptiveElement>
+			{
+				new AdaptiveTextBlock($"No elements were detected using: {inputData.ProtocolName}, with parameter : {inputData.Parameter}, and value: {inputData.ParameterValue}") { Wrap = true },
+			};
+			engine.AddScriptOutput("AdaptiveCard", JsonConvert.SerializeObject(card));
+			return;
 		}
 
 		private void HandleNoElementsFound(IEngine engine, IDms dms, InputData inputData)
