@@ -76,14 +76,14 @@ namespace Show_elements_with_parameter_value_1
 				InputData inputData = new InputData(engine);
 				var dms = engine.GetDms();
 
-				var Elements = dms.GetElements().Where(x => x.Protocol.Name.ToLower() == inputData.ProtocolName);
-				if (!Elements.Any())
+				var elements = dms.GetElements().Where(x => x.Protocol.Name.ToLower() == inputData.ProtocolName);
+				if (!elements.Any())
 				{
 					HandleNoElementsFound(engine, dms, inputData);
 				}
 
 				List<IDmsElement> matchingElements = new List<IDmsElement>();
-				foreach (IDmsElement element in Elements)
+				foreach (IDmsElement element in elements)
 				{
 					try
 					{
